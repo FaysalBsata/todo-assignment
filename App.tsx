@@ -14,16 +14,18 @@ import TodoList from './components/List';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import SplashScreen from 'react-native-splash-screen';
 type Todo = {
   key: string;
   name: string;
   isChecked: boolean;
 };
-export default function App() {
+const App = () => {
+  useEffect(() => {
+    SplashScreen.hide();
+  }, []);
   const [title, setTitle] = useState('');
   const {t, i18n} = useTranslation();
-  const [todo, setTodo] = useState({});
-
   const [todos, setTodos] = useState<Array<Todo>>([]);
   useEffect(() => {
     const retrieveList = async () => {
@@ -139,7 +141,7 @@ export default function App() {
       </View>
     </ImageBackground>
   );
-}
+};
 
 const styles = StyleSheet.create({
   statusBar: {
@@ -167,3 +169,4 @@ const styles = StyleSheet.create({
     width: '80%',
   },
 });
+export default App;
