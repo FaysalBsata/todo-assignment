@@ -1,55 +1,53 @@
 import React, {useState, useEffect} from 'react';
 import {
-  StyleSheet,
   Text,
   TextInput,
   View,
-  Button,
   ScrollView,
   ImageBackground,
   TouchableOpacity,
 } from 'react-native';
 import AppBar from './components/AppBar';
 import TodoList from './components/List';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import SplashScreen from 'react-native-splash-screen';
-import useLocalStorage from './hooks/useLocalStorage';
+import useAsyncStorage from './hooks/useAsyncStorage';
+import styles from './constants/styles/AppStyle';
+import CustomButton from './components/CustomButton';
+import {Languages} from './types/languages';
 type Todo = {
   key: string;
   name: string;
   isChecked: boolean;
 };
 const App = () => {
-  const [age, setAge] = useLocalStorage('todo', {
-    key: '31242343242',
-    name: 'title',
-    isChecked: false,
-  });
+  const [age, setAge] = useAsyncStorage('todo', 29);
   useEffect(() => {
     SplashScreen.hide();
   }, []);
   const [title, setTitle] = useState('');
   const {t, i18n} = useTranslation();
-  const [todos, setTodos] = useState<Array<Todo>>([]);
-  useEffect(() => {
-    const retrieveList = async () => {
-      let list = await AsyncStorage.getItem('todos');
-      if (list) {
-        const content = JSON.parse(list);
-        setTodos(content?.list);
-      }
-    };
-    retrieveList();
-  }, []);
-  useEffect(() => {
-    let changeDetect = async () => {
-      let todosSave = JSON.stringify({list: [...todos]});
-      await AsyncStorage.setItem('todos', todosSave);
-    };
-    changeDetect();
-  }, [todos]);
+  const [todos, setTodos] = useAsyncStorage('todos', []);
+  // const [todos, setTodos] = useState<Array<Todo>>([]);
+  // const [todosss, setTodosss] = useAsyncStorage('todosss', []);
+  // useEffect(() => {
+  //   const retrieveList = async () => {
+  //     let list = await AsyncStorage.getItem('todos');
+  //     if (list) {
+  //       const content = JSON.parse(list);
+  //       setTodos(content?.list);
+  //     }
+  //   };
+  //   retrieveList();
+  // }, []);
+  // useEffect(() => {
+  //   let changeDetect = async () => {
+  //     let todosSave = JSON.stringify({list: [...todos]});
+  //     await AsyncStorage.setItem('todos', todosSave);
+  //   };
+  //   changeDetect();
+  // }, [todos]);
   const addTodo = () => {
     if (title.length > 0) {
       setTodos([
@@ -62,10 +60,9 @@ const App = () => {
 
   const checkTodo = (id: string) => {
     setTodos(
-      todos.map(todo => {
+      todos.map((todo: {key: string; isChecked: boolean}) => {
         if (todo.key === id) {
           todo.isChecked = !todo.isChecked;
-          let todosSave = JSON.stringify({list: [...todos]});
         }
         return todo;
       }),
@@ -74,7 +71,7 @@ const App = () => {
 
   const deleteTodo = (id: string) => {
     setTodos(
-      todos.filter(todo => {
+      todos.filter((todo: {key: string}) => {
         return todo.key !== id.toString();
       }),
     );
@@ -86,13 +83,16 @@ const App = () => {
         <AppBar
           title={t('header')}
           onLangChange={() => {
-            i18n.changeLanguage(i18n.language == 'ar' ? 'en' : 'ar');
+            i18n.changeLanguage(
+              i18n.language == Languages.ar ? Languages.en : Languages.ar,
+            );
           }}
         />
         <View
           style={{
             ...styles.todo,
-            flexDirection: i18n.language == 'ar' ? 'row-reverse' : 'row',
+            flexDirection:
+              i18n.language == Languages.ar ? 'row-reverse' : 'row',
           }}>
           <TextInput
             placeholder={t('add_holder')}
@@ -101,47 +101,33 @@ const App = () => {
             onChangeText={value => setTitle(value)}
             style={{
               ...styles.textbox,
-              textAlign: i18n.language == 'ar' ? 'right' : 'left',
+              textAlign: i18n.language == Languages.ar ? 'right' : 'left',
             }}
           />
-          <TouchableOpacity
+          <CustomButton
+            title={t('add_btn')}
             onPress={() => addTodo()}
-            style={{
+            textStyle={{color: 'green'}}
+            buttonStyle={{
               marginLeft: 10,
               alignItems: 'center',
               justifyContent: 'center',
-            }}>
-            <Icon name="add" size={27} color="green" />
-            <Text style={{color: 'green'}}>{t('add_btn')}</Text>
-          </TouchableOpacity>
+            }}
+            leftComponent={<Icon name="add" size={27} color="green" />}
+          />
         </View>
 
         <ScrollView>
-          {todos.map((todo, index) => (
-            <View key={`item-${todo.key}`}>
-              <TodoList
-                key={`Todo-${todo.key}`}
-                todo={todo}
-                checkTodo={checkTodo}
-                deleteTodo={deleteTodo}
-              />
-              <View
-                style={{height: 1, width: '100%', backgroundColor: 'green'}}
-                key={`Sep-${todo.key}`}
-              />
-            </View>
+          {todos.map((todo: Todo, index: number) => (
+            <TodoList
+              key={`Todo-${todo.key}`}
+              todo={todo}
+              checkTodo={checkTodo}
+              deleteTodo={deleteTodo}
+            />
           ))}
           {todos.length <= 0 && (
             <Text
-              onPress={async () => {
-                let togo = await AsyncStorage.getItem('todo');
-                if (togo) {
-                  let toLog = JSON.parse(togo);
-                  console.log('exists', toLog);
-                } else {
-                  console.log('doesnt');
-                }
-              }}
               style={{
                 color: 'gold',
                 fontWeight: 'bold',
@@ -158,30 +144,4 @@ const App = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  statusBar: {
-    color: '#fff',
-    width: '100%',
-    height: 30,
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  todo: {
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  textbox: {
-    borderWidth: 1,
-    color: 'white',
-    borderColor: 'white',
-    borderRadius: 8,
-    padding: 10,
-    margin: 10,
-    width: '80%',
-  },
-});
 export default App;

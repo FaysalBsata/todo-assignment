@@ -44,6 +44,7 @@ export default function TodoList(props: Props) {
           onPress={() => props.deleteTodo(props.todo.key)}
         />
       </View>
+      <View style={{height: 1, width: '100%', backgroundColor: 'green'}} />
     </TouchableOpacity>
   );
 }
