@@ -15,12 +15,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import SplashScreen from 'react-native-splash-screen';
+import useLocalStorage from './hooks/useLocalStorage';
 type Todo = {
   key: string;
   name: string;
   isChecked: boolean;
 };
 const App = () => {
+  const [age, setAge] = useLocalStorage('todo', {
+    key: '31242343242',
+    name: 'title',
+    isChecked: false,
+  });
   useEffect(() => {
     SplashScreen.hide();
   }, []);
@@ -127,6 +133,15 @@ const App = () => {
           ))}
           {todos.length <= 0 && (
             <Text
+              onPress={async () => {
+                let togo = await AsyncStorage.getItem('todo');
+                if (togo) {
+                  let toLog = JSON.parse(togo);
+                  console.log('exists', toLog);
+                } else {
+                  console.log('doesnt');
+                }
+              }}
               style={{
                 color: 'gold',
                 fontWeight: 'bold',
