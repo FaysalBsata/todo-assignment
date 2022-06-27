@@ -16,6 +16,8 @@ import useAsyncStorage from './hooks/useAsyncStorage';
 import styles from './constants/styles/AppStyle';
 import CustomButton from './components/CustomButton';
 import {Languages} from './types/languages';
+import Input from './components/Input';
+import FallBack from './components/FallBack';
 type Todo = {
   key: string;
   name: string;
@@ -88,7 +90,7 @@ const App = () => {
             );
           }}
         />
-        <View
+        {/* <View
           style={{
             ...styles.todo,
             flexDirection:
@@ -115,8 +117,8 @@ const App = () => {
             }}
             leftComponent={<Icon name="add" size={27} color="green" />}
           />
-        </View>
-
+        </View> */}
+        <Input title={title} setTitle={setTitle} addTodo={addTodo} />
         <ScrollView>
           {todos.map((todo: Todo, index: number) => (
             <TodoList
@@ -127,16 +129,17 @@ const App = () => {
             />
           ))}
           {todos.length <= 0 && (
-            <Text
-              style={{
-                color: 'gold',
-                fontWeight: 'bold',
-                fontSize: 22,
-                textAlign: 'center',
-                marginTop: 30,
-              }}>
-              {t('no_todos')}
-            </Text>
+            <FallBack text={t('no_todos')} />
+            // <Text
+            //   style={{
+            //     color: 'gold',
+            //     fontWeight: 'bold',
+            //     fontSize: 22,
+            //     textAlign: 'center',
+            //     marginTop: 30,
+            //   }}>
+            //   {t('no_todos')}
+            // </Text>
           )}
         </ScrollView>
       </View>
